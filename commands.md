@@ -1,96 +1,143 @@
 # CAD Command Reference for AI Assistant
 
-  ## BASIC SHAPES
+## CLI COMMAND FORMAT
 
-  ### Triangle
-  ```json
-  {"action":"createTriangle", "id":"triangle1", "color":"#ff0000"}
+Use this CLI syntax for CAD commands:
 
-  Cube
+## BASIC OBJECT CREATION
 
-  {"action":"createCube", "id":"cube1", "size":3.0, "color":"#00ff00"}
+### Create Object
+```
+obj ObjectName
+```
 
-  Sphere
+### Add Lines to Object
+```
+ObjectName.line LineName Length
+```
 
-  {"action":"createSphere", "id":"sphere1", "radius":2.0, "color":"#0000ff"}
+### Set Line Points
+```
+LineName.start(x,y,z)
+LineName.end(x,y,z)
+```
 
-  Line
+### Connect Lines
+```
+Line1.end = Line2.start
+```
 
-  {"action":"createLine", "id":"line1", "length":5.0, "color":"#ffff00"}
+### Extrude Object
+```
+extrude ObjectName Height
+```
 
-  ADVANCED SHAPES
+## EXAMPLES
 
-  Bezier Spline
+### Simple Cube
+```
+obj cube
+cube.line edge1 5
+cube.line edge2 5
+cube.line edge3 5
+cube.line edge4 5
+edge1.start(0,0,0)
+edge1.end = edge2.start
+edge2.end = edge3.start
+edge3.end = edge4.start
+edge4.end = edge1.start
+extrude cube 5
+```
 
-  {"action":"createBezierSpline", "id":"spline1", "controlPoints":[{"x":-1,"y":0,"z":0},{"x":1,"y":1,"z":0}],
-  "color":"#ff00ff"}
+### Simple House
+```
+obj house
+house.line wall1 10
+house.line wall2 8
+house.line wall3 10
+house.line wall4 8
+wall1.start(0,0,0)
+wall1.end = wall2.start
+wall2.end = wall3.start
+wall3.end = wall4.start
+wall4.end = wall1.start
+extrude house 3
+```
 
-  OpenCASCADE Cube
+### Triangle
+```
+obj triangle
+triangle.line side1 6
+triangle.line side2 6
+triangle.line side3 6
+side1.start(0,0,0)
+side1.end = side2.start
+side2.end = side3.start
+side3.end = side1.start
+```
 
-  {"action":"createOccCube", "id":"occ_cube1", "width":3, "height":3, "depth":3, "color":"#00ffff"}
+### Rectangle
+```
+obj rect
+rect.line top 8
+rect.line right 5
+rect.line bottom 8
+rect.line left 5
+top.start(0,0,0)
+top.end = right.start
+right.end = bottom.start
+bottom.end = left.start
+left.end = top.start
+```
 
-  SKETCHING
+### L-Shape
+```
+obj L
+L.line line1 3
+L.line line2 2
+L.line line3 1
+L.line line4 2
+L.line line5 2
+L.line line6 3
+line1.start(0,0,0)
+line1.end = line2.start
+line2.end = line3.start
+line3.end = line4.start
+line4.end = line5.start
+line5.end = line6.start
+line6.end = line1.start
+```
 
-  Sketch Profile (2D shapes for extrusion)
+## RULES FOR AI
 
-  {"action":"createSketchProfile", "id":"profile1",
-  "lines":[{"start":{"x":0,"y":0},"end":{"x":5,"y":0}},{"start":{"x":5,"y":0},"end":{"x":5,"y":3}},{"start":{"x":5,"y":
-  3},"end":{"x":0,"y":3}},{"start":{"x":0,"y":3},"end":{"x":0,"y":0}}]}
+1. **Always use unique names** for objects and lines
+2. **Use realistic dimensions** (typically 1-20 units)
+3. **For closed shapes**: Connect all lines in sequence
+4. **For 3D objects**: Create 2D profile first, then extrude
+5. **One command per line**
+6. **Return only CLI commands, no explanations**
 
-  3D OPERATIONS
+## COMMAND PATTERNS
 
-  Extrude (Make 2D profile into 3D)
+- **obj name**: Creates new object
+- **object.line name length**: Adds line to object
+- **line.start(x,y,z)**: Sets line start point
+- **line.end(x,y,z)**: Sets line end point
+- **line1.end = line2.start**: Connects two lines
+- **extrude object height**: Makes 3D from 2D profile
 
-  {"action":"extrudeSolid", "id":"extruded1", "profileId":"profile1", "height":5.0, "color":"#888888"}
+## COORDINATES
 
-  Revolve (Spin profile around axis)
+- Use (x,y,z) format for 3D points
+- Use (x,y,0) for 2D points
+- Example: wall1.start(0,0,0)
+- Example: wall1.end(10,0,0)
 
-  {"action":"revolveSolid", "id":"revolved1", "profileId":"profile1", "angle":360, "color":"#888888"}
+## STEP-BY-STEP PROCESS
 
-  BOOLEAN OPERATIONS
-
-  Subtract (Cut one object from another)
-
-  {"action":"booleanSubtract", "targetId":"object1", "toolId":"object2"}
-
-  Fillet (Round edges)
-
-  {"action":"filletSolid", "targetId":"object1", "radius":0.5}
-
-  EXAMPLES
-
-  Simple House
-
-  {"action":"createSketchProfile", "id":"house_base", 
-  "lines":[{"start":{"x":0,"y":0},"end":{"x":10,"y":0}},{"start":{"x":10,"y":0},"end":{"x":10,"y":8}},{"start":{"x":10,
-  "y":8},"end":{"x":0,"y":8}},{"start":{"x":0,"y":8},"end":{"x":0,"y":0}}]}
-  {"action":"extrudeSolid", "id":"house", "profileId":"house_base", "height":3.0, "color":"#8B4513"}
-
-  Tower with Roof
-
-  {"action":"createCube", "id":"tower_base", "size":4.0, "color":"#A0522D"}
-  {"action":"createTriangle", "id":"roof", "color":"#8B0000"}
-
-  Curved Vase
-
-  {"action":"createBezierSpline", "id":"vase_profile", 
-  "controlPoints":[{"x":0,"y":0,"z":0},{"x":3,"y":2,"z":0},{"x":2,"y":5,"z":0},{"x":4,"y":8,"z":0}], "color":"#00ffff"}
-  {"action":"revolveSolid", "id":"vase", "profileId":"vase_profile", "angle":360, "color":"#888888"}
-
-  RULES FOR AI
-
-  1. Always use unique IDs for each object
-  2. Colors in #rrggbb hex format (red: #ff0000, green: #00ff00, blue: #0000ff)
-  3. For buildings/complex shapes: Create sketch profile first, then extrude
-  4. For round objects: Create profile, then revolve
-  5. Use realistic dimensions (typically 1-20 units)
-  6. One JSON command per line
-  7. Return only JSON commands, no explanatory text
-
-  COMMON PATTERNS
-
-  - Simple shapes: Direct creation (createCube, createSphere)
-  - Buildings: createSketchProfile → extrudeSolid
-  - Cylindrical objects: createSketchProfile → revolveSolid (360°)
-  - Complex shapes: Multiple objects + booleanSubtract
-  - Organic shapes: Use createBezierSpline
+1. Create object: `obj name`
+2. Add lines: `name.line line1 length`
+3. Set start point: `line1.start(x,y,z)`
+4. Connect lines: `line1.end = line2.start`
+5. Close shape: `lastLine.end = firstLine.start`
+6. Extrude if needed: `extrude name height`
